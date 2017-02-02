@@ -99,7 +99,7 @@ public class ImageDownloader {
 	}
 
 	public void saveAllCoverImages() {
-		log.debug("Saving all cover images for {}", search);
+		log.info("Saving all cover images for {}", search);
 
 		List<String> urls = getWebDriver().findElements(BOOK_ELEMENTS)
 											.stream()
@@ -108,12 +108,17 @@ public class ImageDownloader {
 
 		urls.stream()
 			.forEach(x -> {
-				getWebDriver().get(x);
-				saveCoverImage();
+				try {
+					getWebDriver().get(x);
+					saveCoverImage();
+					Thread.sleep(2_000);
+				} catch (Exception e) {
+					log.error(e.getLocalizedMessage());
+				}
 
 			});
 
-		log.debug("Finished saving all cover images for {}", search);
+		log.info("Finished saving all cover images for {}", search);
 
 	}
 
@@ -145,7 +150,7 @@ public class ImageDownloader {
 			isbn = String.valueOf(new Random().nextLong()) + "AAAAAAAAAAAA";
 		}
 
-		log.debug("filename {}", String.format(fileNameFormat, title.getText(), isbn.substring(0, 9)
+		log.info("filename {}", String.format(fileNameFormat, title.getText(), isbn.substring(0, 9)
 																					.trim()));
 
 		return String.format(fileNameFormat, title.getText()
@@ -178,16 +183,16 @@ public class ImageDownloader {
 	}
 
 	private WebElement waitForElementClickable(By field) {
-		log.debug("Waiting for element to be clickable {}", field);
+		log.info("Waiting for element to be clickable {}", field);
 		WebElement webElement = new WebDriverWait(getWebDriver(), 60).until(ExpectedConditions.elementToBeClickable(field));
-		log.debug("Found weblement for field {}", field);
+		log.info("Found weblement for field {}", field);
 		return webElement;
 	}
 
 	private WebElement waitForElementPresenet(By field) {
-		log.debug("Waiting for element to be clickable {}", field);
+		log.info("Waiting for element to be clickable {}", field);
 		WebElement webElement = new WebDriverWait(getWebDriver(), 60).until(ExpectedConditions.presenceOfElementLocated(field));
-		log.debug("Found weblement for field {}", field);
+		log.info("Found weblement for field {}", field);
 		return webElement;
 	}
 
