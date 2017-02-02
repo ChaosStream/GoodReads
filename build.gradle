@@ -1,0 +1,40 @@
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'application'
+
+
+mainClassName = "com.chaosenterprise.goodreads.Main"
+
+jar {
+	from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+
+	baseName = 'GoodReads Imagedownloader'
+	version = '0.0.1'
+	manifest {
+        attributes("Implementation-Title": baseName,
+                   "Implementation-Version": version, 
+					"Main-Class": mainClassName)
+    }
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compile group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '3.0.1'
+	compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.6.1'
+	compile group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
+	compile group: 'log4j', name: 'log4j', version: '1.2.17'
+}
+
+
