@@ -184,14 +184,14 @@ public class ImageDownloader {
 
 	private WebElement waitForElementClickable(By field) {
 		log.info("Waiting for element to be clickable {}", field);
-		WebElement webElement = new WebDriverWait(getWebDriver(), 60).until(ExpectedConditions.elementToBeClickable(field));
+		WebElement webElement = new WebDriverWait(getWebDriver(), 30).until(ExpectedConditions.elementToBeClickable(field));
 		log.info("Found weblement for field {}", field);
 		return webElement;
 	}
 
 	private WebElement waitForElementPresenet(By field) {
 		log.info("Waiting for element to be clickable {}", field);
-		WebElement webElement = new WebDriverWait(getWebDriver(), 60).until(ExpectedConditions.presenceOfElementLocated(field));
+		WebElement webElement = new WebDriverWait(getWebDriver(), 30).until(ExpectedConditions.presenceOfElementLocated(field));
 		log.info("Found weblement for field {}", field);
 		return webElement;
 	}

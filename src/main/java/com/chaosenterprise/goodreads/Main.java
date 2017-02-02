@@ -8,8 +8,12 @@ import java.util.List;
 import java.util.Scanner;
 
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Main {
+
+	private static final Logger log = LoggerFactory.getLogger(Main.class);
 
 	private Main() {
 	}
@@ -31,10 +35,16 @@ public class Main {
 		try {
 
 			books.stream()
-					.forEach(x -> imageDownload.searchForBook(x)
-												.loadFirstResult()
-												.getAllEditions()
-												.saveAllCoverImages());
+					.forEach(x -> {
+						try {
+							imageDownload.searchForBook(x)
+											.loadFirstResult()
+											.getAllEditions()
+											.saveAllCoverImages();
+						} catch (Exception e) {
+							log.warn("Failed to find element for {}", x);
+						}
+					});
 		} finally {
 
 			imageDownload.quit();
