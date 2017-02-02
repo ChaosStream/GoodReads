@@ -15,7 +15,7 @@ jar {
 	from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
 
 	baseName = 'GoodReads'
-	version = '0.0.1'
+	version = '0.0.2'
 	manifest {
         attributes("Implementation-Title": baseName,
                    "Implementation-Version": version, 
