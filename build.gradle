@@ -14,7 +14,7 @@ mainClassName = "com.chaosenterprise.goodreads.Main"
 jar {
 	from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
 
-	baseName = 'GoodReads Imagedownloader'
+	baseName = 'GoodReads'
 	version = '0.0.1'
 	manifest {
         attributes("Implementation-Title": baseName,

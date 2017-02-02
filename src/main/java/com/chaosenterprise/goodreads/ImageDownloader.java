@@ -130,7 +130,7 @@ public class ImageDownloader {
 		WebElement moreDetails = waitForElementClickable(MORE_DETAILS);
 		moreDetails.click();
 
-		WebElement title = getWebDriver().findElement(By.xpath("//div[contains(@class,'infoBoxRowTitle') and text() = 'Original Title']/../div[contains(@class,'infoBoxRowItem')]"));
+		WebElement title = getWebDriver().findElement(By.xpath("//h1[@id='bookTitle']"));
 
 		try {
 			isbn = getWebDriver().findElement(By.xpath("//div[contains(@class,'infoBoxRowTitle') and text() = 'ISBN']/../div[contains(@class,'infoBoxRowItem')]"))
