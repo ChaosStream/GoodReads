@@ -152,6 +152,7 @@ public class ImageDownloader {
 		String fileName = String.format("%s %s.png", title.getText(), UUID.randomUUID());
 
 		fileName.replaceAll("[\\<\\>\\:\\\"\\/\\|\\?\\*]", "");
+		fileName.replaceAll("[\\<\\>\\:\\\\\"\\/\\|\\?\\*]", "");
 
 		log.info("filename {}", fileName);
 
