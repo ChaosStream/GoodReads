@@ -39,10 +39,10 @@ public class Main {
 						try {
 							imageDownload.searchForBook(x)
 											.loadFirstResult()
-											.getAllEditions()
+											.openEditionPage()
 											.saveAllCoverImages();
 						} catch (Exception e) {
-							log.warn("Failed to find element for {}", x);
+							log.error(e.getLocalizedMessage());
 						}
 					});
 		} finally {

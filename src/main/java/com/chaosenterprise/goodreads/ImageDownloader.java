@@ -3,15 +3,16 @@ package com.chaosenterprise.goodreads;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -42,6 +43,10 @@ public class ImageDownloader {
 
 	private final static By BOOK_ELEMENTS = By.xpath("//a[contains(@class,'bookTitle')]");
 
+	private static final By BOOK_TITLE = By.xpath("//h1[@id='bookTitle']");
+
+	private static final By NEXT_PAGE = By.xpath("//a[@rel='next' and @class='next_page']");
+
 	private WebDriver webDriver;
 
 	private String search;
@@ -55,17 +60,14 @@ public class ImageDownloader {
 	}
 
 	private WebDriver getWebDriver() {
-		if (webDriver == null) {
+		if (webDriver == null || webDriver.toString()
+											.contains("null")) {
 			try {
 				webDriver = new ChromeDriver();
-
 			} catch (Exception e) {
 				log.warn(e.getLocalizedMessage());
-				e.printStackTrace();
 			}
-
 		}
-
 		return webDriver;
 	}
 
@@ -89,7 +91,7 @@ public class ImageDownloader {
 		return this;
 	}
 
-	public ImageDownloader getAllEditions() {
+	public ImageDownloader openEditionPage() {
 		WebElement moreDetails = waitForElementClickable(MORE_DETAILS);
 		moreDetails.click();
 
@@ -101,84 +103,75 @@ public class ImageDownloader {
 	public void saveAllCoverImages() {
 		log.info("Saving all cover images for {}", search);
 
-		List<String> urls = getWebDriver().findElements(BOOK_ELEMENTS)
-											.stream()
-											.map(x -> x.getAttribute("href"))
-											.collect(Collectors.toList());
+		findAllEditionLinks().stream()
+								.forEach(x -> {
+									try {
+										log.info("Processing edition {}", x);
+										getWebDriver().get(x);
+										saveCoverImage();
+									} catch (Exception e) {
+										log.error(e.getLocalizedMessage());
+									}
 
-		urls.stream()
-			.forEach(x -> {
-				try {
-					getWebDriver().get(x);
-					saveCoverImage();
-					Thread.sleep(2_000);
-				} catch (Exception e) {
-					log.error(e.getLocalizedMessage());
-				}
-
-			});
+								});
 
 		log.info("Finished saving all cover images for {}", search);
 
 	}
 
-	private String getFileName() {
-		String fileNameFormat = "%s %s.png";
+	private List<String> findAllEditionLinks() {
+		List<String> editions = new ArrayList<String>();
 
-		String isbn = "";
-
-		WebElement moreDetails = waitForElementClickable(MORE_DETAILS);
-		moreDetails.click();
-
-		WebElement title = getWebDriver().findElement(By.xpath("//h1[@id='bookTitle']"));
+		editions.addAll(getWebDriver().findElements(BOOK_ELEMENTS)
+										.stream()
+										.map(x -> x.getAttribute("href"))
+										.collect(Collectors.toList()));
 
 		try {
-			isbn = getWebDriver().findElement(By.xpath("//div[contains(@class,'infoBoxRowTitle') and text() = 'ISBN']/../div[contains(@class,'infoBoxRowItem')]"))
-									.getText();
-		} catch (NoSuchElementException e) {
+			while (true) {
+				WebElement nextPage = getWebDriver().findElement(NEXT_PAGE);
+				nextPage.click();
+				editions.addAll(getWebDriver().findElements(BOOK_ELEMENTS)
+												.stream()
+												.map(x -> x.getAttribute("href"))
+												.collect(Collectors.toList()));
+			}
+
+		} catch (Exception e) {
 			log.warn(e.getLocalizedMessage());
 		}
 
-		try {
-			isbn = getWebDriver().findElement(By.xpath("//div[contains(@class,'infoBoxRowTitle') and text() = 'ASIN']/../div[contains(@class,'infoBoxRowItem')]"))
-									.getText();
-		} catch (NoSuchElementException e) {
-			log.warn(e.getLocalizedMessage());
-		}
+		log.debug("Editions: {}", editions);
 
-		if (isbn == null || isbn.isEmpty()) {
-			isbn = String.valueOf(new Random().nextLong()) + "AAAAAAAAAAAA";
-		}
-
-		log.info("filename {}", String.format(fileNameFormat, title.getText(), isbn.substring(0, 9)
-																					.trim()));
-
-		return String.format(fileNameFormat, title.getText()
-													.trim(), isbn.substring(0, 9)
-																	.trim());
-
+		return editions;
 	}
 
-	private void saveCoverImage() {
+	private String getFileName() {
+		WebElement title = getWebDriver().findElement(BOOK_TITLE);
+
+		String fileName = String.format("%s %s.png", title.getText(), UUID.randomUUID());
+
+		fileName.replaceAll("[\\<\\>\\:\\\"\\/\\|\\?\\*]", "");
+
+		log.info("filename {}", fileName);
+
+		return fileName;
+	}
+
+	private void saveCoverImage() throws MalformedURLException, IOException {
 
 		WebElement image = waitForElementPresenet(COVER_IMAGE);
 
-		BufferedImage bi;
-		try {
-			bi = ImageIO.read(new URL(image.getAttribute("src")));
+		BufferedImage bi = ImageIO.read(new URL(image.getAttribute("src")));
 
-			File f = new File("Images" + File.separator + search);
-			if (!f.exists()) {
-				f.mkdirs();
-			}
-
-			File output = new File("Images" + File.separator + search, getFileName());
-
-			ImageIO.write(bi, "png", output);
-		} catch (IOException e) {
-			log.error("failed to save image {}", image);
-			e.printStackTrace();
+		File f = new File("Images" + File.separator + search);
+		if (!f.exists()) {
+			f.mkdirs();
 		}
+
+		File output = new File("Images" + File.separator + search, getFileName());
+
+		ImageIO.write(bi, "png", output);
 
 	}
 
