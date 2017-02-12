@@ -122,23 +122,20 @@ public class ImageDownloader {
 	private List<String> findAllEditionLinks() {
 		List<String> editions = new ArrayList<String>();
 
-		editions.addAll(getWebDriver().findElements(BOOK_ELEMENTS)
-										.stream()
-										.map(x -> x.getAttribute("href"))
-										.collect(Collectors.toList()));
-
 		try {
 			while (true) {
-				WebElement nextPage = getWebDriver().findElement(NEXT_PAGE);
-				nextPage.click();
 				editions.addAll(getWebDriver().findElements(BOOK_ELEMENTS)
 												.stream()
 												.map(x -> x.getAttribute("href"))
 												.collect(Collectors.toList()));
+
+				WebElement nextPage = waitForElementClickable(NEXT_PAGE);
+				nextPage.click();
+
 			}
 
 		} catch (Exception e) {
-			log.warn(e.getLocalizedMessage());
+			log.error(e.getLocalizedMessage());
 		}
 
 		log.debug("Editions: {}", editions);
@@ -149,10 +146,8 @@ public class ImageDownloader {
 	private String getFileName() {
 		WebElement title = getWebDriver().findElement(BOOK_TITLE);
 
-		String fileName = String.format("%s %s.png", title.getText(), UUID.randomUUID());
-
-		fileName.replaceAll("[\\<\\>\\:\\\"\\/\\|\\?\\*]", "");
-		fileName.replaceAll("[\\<\\>\\:\\\\\"\\/\\|\\?\\*]", "");
+		String fileName = String.format("%s %s.png", title.getText(), UUID.randomUUID())
+								.replaceAll("[\\<\\>\\:\\\\\"\\/\\|\\?\\*]", "");
 
 		log.info("filename {}", fileName);
 
@@ -178,14 +173,14 @@ public class ImageDownloader {
 
 	private WebElement waitForElementClickable(By field) {
 		log.info("Waiting for element to be clickable {}", field);
-		WebElement webElement = new WebDriverWait(getWebDriver(), 30).until(ExpectedConditions.elementToBeClickable(field));
+		WebElement webElement = new WebDriverWait(getWebDriver(), 10).until(ExpectedConditions.elementToBeClickable(field));
 		log.info("Found weblement for field {}", field);
 		return webElement;
 	}
 
 	private WebElement waitForElementPresenet(By field) {
 		log.info("Waiting for element to be clickable {}", field);
-		WebElement webElement = new WebDriverWait(getWebDriver(), 30).until(ExpectedConditions.presenceOfElementLocated(field));
+		WebElement webElement = new WebDriverWait(getWebDriver(), 10).until(ExpectedConditions.presenceOfElementLocated(field));
 		log.info("Found weblement for field {}", field);
 		return webElement;
 	}
