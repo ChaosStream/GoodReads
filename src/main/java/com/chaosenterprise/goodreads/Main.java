@@ -52,19 +52,30 @@ public class Main {
 	}
 
 	private static void setup() throws IOException {
-		URL resource = Main.class.getClassLoader()
-									.getResource("chromedriver.exe");
 
-		File f = new File("Drivers");
+		File f = new File("Drivers/Chrome");
 		if (!f.exists()) {
 			f.mkdirs();
 		}
-		File chromeDriver = new File("Drivers" + File.separator + "chromedriver.exe");
-		if (!chromeDriver.exists()) {
-			chromeDriver.createNewFile();
-			FileUtils.copyURLToFile(resource, chromeDriver);
+
+		String[] filesToExport = new String[] { "Ghostery_v7.1.2.3.crx", "uBlock-Origin_v1.11.0.crx", "chromedriver.exe" };
+
+		for (String file : filesToExport) {
+			URL url = Main.class.getClassLoader()
+								.getResource(file);
+
+			File f2 = new File("Drivers/Chrome" + File.separator + file);
+			if (!f2.exists()) {
+				f2.createNewFile();
+				FileUtils.copyURLToFile(url, f2);
+			}
+
+			if (file.contains("chromedriver")) {
+				System.setProperty("webdriver.chrome.driver", f2.getAbsolutePath());
+			}
+
 		}
-		System.setProperty("webdriver.chrome.driver", chromeDriver.getAbsolutePath());
+
 	}
 
 }

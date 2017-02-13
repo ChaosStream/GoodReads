@@ -13,9 +13,11 @@ import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
@@ -60,12 +62,16 @@ public class ImageDownloader {
 	}
 
 	private WebDriver getWebDriver() {
+		log.info("webdriver: {}", webDriver);
 		if (webDriver == null || webDriver.toString()
-											.contains("null")) {
+											.contains("null") || webDriver.getWindowHandles() == null || webDriver.getWindowHandles()
+																													.isEmpty()) {
 			try {
-				webDriver = new ChromeDriver();
+				ChromeOptions options = new ChromeOptions();
+				options.addExtensions(new File("Drivers/Chrome/uBlock-Origin_v1.11.0.crx"), new File("Drivers/Chrome/Ghostery_v7.1.2.3.crx"));
+				webDriver = new ChromeDriver(options);
 			} catch (Exception e) {
-				log.warn(e.getLocalizedMessage());
+				log.error("{}", e);
 			}
 		}
 		return webDriver;
@@ -109,8 +115,11 @@ public class ImageDownloader {
 										log.info("Processing edition {}", x);
 										getWebDriver().get(x);
 										saveCoverImage();
+									} catch (TimeoutException e) {
+										log.warn("{}", e);
 									} catch (Exception e) {
-										log.error(e.getLocalizedMessage());
+										log.error("{}", e);
+										quit();
 									}
 
 								});
@@ -134,8 +143,11 @@ public class ImageDownloader {
 
 			}
 
+		} catch (TimeoutException e) {
+			log.warn("{}", e);
 		} catch (Exception e) {
-			log.error(e.getLocalizedMessage());
+			log.error("{}", e);
+			quit();
 		}
 
 		log.debug("Editions: {}", editions);
